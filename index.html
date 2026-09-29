@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulator EA1 · Hodgkin–Huxley 3D · Kv1.1 / KCNA1</title>
+<meta name="description" content="Simulator edukasi interaktif Hodgkin-Huxley 3D untuk mengeksplorasi efek altered potassium conductance (Kv1.1/KCNA1) pada Episodic Ataxia Type 1.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%232563EB'/></svg>">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-title">EA1 Neuron Simulator</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <div class="loading-text">Memuat model dan visualisasi 3D…</div>
+</div>
+
+<div class="app-shell">
+
+  <!-- ============================== SIDEBAR ============================== -->
+  <nav class="sidebar" aria-label="Navigasi bagian">
+    <div class="sidebar-brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2 C 8 2 6 6 6 9 C 6 12 8 13 8 16 L 16 16 C 16 13 18 12 18 9 C 18 6 16 2 12 2 Z" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="10" y1="16" x2="10" y2="21" stroke="currentColor" stroke-width="1.6"/><line x1="14" y1="16" x2="14" y2="21" stroke="currentColor" stroke-width="1.6"/></svg>
+      </span>
+      <span class="brand-text">EA1 Sim 3D</span>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="#beranda" class="nav-link active" data-section="beranda">Beranda</a></li>
+      <li><a href="#simulasi" class="nav-link" data-section="simulasi">Simulasi Neuron 3D</a></li>
+      <li><a href="#kanal" class="nav-link" data-section="kanal">Kanal Ion Kv1.1</a></li>
+      <li><a href="#hasil" class="nav-link" data-section="hasil">Hasil &amp; Grafik</a></li>
+      <li><a href="#analisis" class="nav-link" data-section="analisis">Analisis</a></li>
+      <li><a href="#parameter" class="nav-link" data-section="parameter">Parameter</a></li>
+      <li><a href="#materi" class="nav-link" data-section="materi">Materi Edukasi</a></li>
+      <li><a href="#tentang" class="nav-link" data-section="tentang">Tentang</a></li>
+    </ul>
+    <div class="sidebar-footnote">Model membran Hodgkin–Huxley · disederhanakan untuk edukasi</div>
+  </nav>
+
+  <!-- ============================== MAIN ============================== -->
+  <div class="main-column">
+
+    <header class="app-header">
+      <div class="hdr-top">
+        <div class="hdr-titles">
+          <h1>Simulator Neuron EA1</h1>
+          <p class="subtitle">Model Hodgkin–Huxley edukatif | g_K sebagai penyederhanaan EA1</p>
+        </div>
+        <div class="hdr-actions">
+          <button class="cond-btn cond-compare hdr-compare" data-condition="compare" title="Tampilkan Normal dan Altered K+ bersamaan pada grafik & analisis">Bandingkan</button>
+          <span class="badge" id="condition-badge" title="Kondisi model yang aktif pada grafik & analisis">Normal</span>
+          <span class="run-state"><span class="status-dot" id="status-dot"></span><span id="status-text">Siap</span></span>
+        </div>
+      </div>
+      <div class="hdr-stats" role="group" aria-label="Status eksperimen">
+        <div class="stat-card"><span class="label">Waktu simulasi (model)</span><span class="value" id="sim-time">t = 0.0 ms</span></div>
+        <div class="stat-card stat-params"><span class="label">Parameter aktif</span>
+          <span class="value params-row"><span>g_K <b id="h-gk">—</b></span><span>I_ext <b id="h-iext">—</b></span><span>dt <b id="h-dt">—</b></span></span></div>
+        <div class="stat-card"><span class="label">Playback (tampilan)</span><span class="value" id="h-speed">1.0×</span></div>
+        <div class="stat-card stat-rec"><span class="label">Status rekaman</span><span class="value" id="h-rec">Belum ada data</span></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ============================== BERANDA ============================== -->
+      <section id="beranda" class="section active">
+        <div class="panel context-panel">
+          <h2 class="panel-title">Konteks Biologis</h2>
+          <div class="pathway">
+            <div class="pathway-step"><div class="pathway-label">Mutasi KCNA1</div></div>
+            <div class="pathway-arrow">&#8594;</div>
+            <div class="pathway-step"><div class="pathway-label">Disfungsi Kv1.1</div></div>
+            <div class="pathway-arrow">&#8594;</div>
+            <div class="pathway-step"><div class="pathway-label">Arus K+ berubah</div></div>
+            <div class="pathway-arrow">&#8594;</div>
+            <div class="pathway-step"><div class="pathway-label">Dinamika neuron berubah</div></div>
+          </div>
+          <p class="context-text">Episodic Ataxia Type 1 (EA1) dikaitkan dengan varian patogenik pada
+            <strong>KCNA1</strong>, gen yang mengkode subunit kanal kalium <strong>Kv1.1</strong>.</p>
+          <p class="context-text">Simulator ini menyederhanakan masalah biologis tersebut dengan mengubah
+            konduktansi kalium (g_K) pada model membran Hodgkin–Huxley klasik, lalu memvisualisasikan
+            dampaknya secara 3D — pada tingkat sel penuh maupun pada tingkat kanal ion tunggal.</p>
+        </div>
+
+        <div class="panel question-panel">
+          <h2 class="panel-title">Yang Diuji</h2>
+          <p class="question-text">Bagaimana perubahan konduktansi K+ (terinspirasi disfungsi Kv1.1 pada EA1)
+            memengaruhi dinamika potensial aksi neuron?</p>
+          <div class="condition-selector" id="condition-selector" role="group" aria-label="Pemilih kondisi">
+            <button class="cond-btn cond-normal active" data-condition="normal">Normal</button>
+            <button class="cond-btn cond-altered" data-condition="altered">Altered K+ (EA1)</button>
+            <button class="cond-btn cond-compare" data-condition="compare">Bandingkan</button>
+          </div>
+          <p class="control-hint">Pilihan ini berlaku untuk grafik &amp; analisis. Visualisasi 3D memiliki
+            sakelar tampilan tersendiri pada tiap panel (lihat bagian Simulasi &amp; Kanal Ion).</p>
+        </div>
+
+        <div class="panel">
+          <h2 class="panel-title">Ringkasan Fitur</h2>
+          <div class="edu-grid">
+            <div class="edu-card"><h3>Neuron 3D interaktif</h3><p>Putar, perbesar, jalankan, jeda, dan reset simulasi perambatan potensial aksi di sepanjang akson.</p></div>
+            <div class="edu-card"><h3>Zoom kanal Kv1.1</h3><p>Perbesar hingga tingkat kanal ion: lihat bilayer lipid, gerbang kanal, dan aliran K+ yang terhubung langsung ke model.</p></div>
+            <div class="edu-card"><h3>Grafik real-time</h3><p>Tegangan membran, arus ionik, dan variabel gerbang diplot langsung dari hasil integrasi numerik.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== SIMULASI 3D ============================== -->
+      <section id="simulasi" class="section">
+        <div class="sim-grid">
+          <div class="panel sim-viz">
+            <div class="panel-title-row">
+              <h2 class="panel-title">Neuron 3D &mdash; Vm tiap segmen</h2>
+              <div class="mini-toggle" id="neuron-view-toggle" title="Model yang diwarnai pada tampilan 3D">
+                <button class="mini-toggle-btn active" data-view="normal">3D: Normal</button>
+                <button class="mini-toggle-btn" data-view="altered">3D: Altered K+</button>
+              </div>
+            </div>
+            <div class="viewport-wrap sim-viewport">
+              <canvas id="viewport-neuron"></canvas>
+              <div class="vlegend" aria-label="Legenda warna Vm">
+                <div class="vbar"></div>
+                <div class="vticks"><span>&minus;80</span><span>&minus;65</span><span>&minus;20</span><span>+40 mV</span></div>
+              </div>
+              <div class="legend-tags"><span><i class="tag-stim"></i>Lokasi stimulus (segmen 0–1)</span><span><i class="tag-kv"></i>Penanda ilustratif Kv1.1 (segmen 25)</span></div>
+              <div class="viewport-hint">Seret: putar &middot; scroll: zoom &middot; klik segmen: pilih</div>
+              <div id="webgl-error" class="webgl-error" hidden>Visualisasi 3D tidak dapat dirender (WebGL tidak tersedia atau gagal diinisialisasi). Grafik dan simulasi tetap berjalan.</div>
+            </div>
+            <div class="seg-readout" id="seg-readout">Klik salah satu segmen akson untuk melihat Vm aktualnya. Gerakkan kursor di grafik untuk melihat kondisi 3D pada waktu tersebut.</div>
+            <div class="chart-wrap chart-live"><canvas id="chart-live" class="chart-canvas"></canvas></div>
+            <p class="figure-caption">Warna segmen = Vm hasil model pada segmen tersebut (bukan animasi dekoratif). Selubung mielin dan marker Kv1.1 hanya ilustrasi visual: model menerapkan persamaan HH yang identik pada seluruh 50 segmen yang dikopel. Stimulus diberikan pada segmen 0–1; area oranye pada grafik = durasi stimulus.</p>
+          </div>
+
+          <aside class="panel sim-controls">
+            <h2 class="panel-title">Kontrol eksperimen</h2>
+            <div class="ctl-label">Mode grafik &amp; analisis</div>
+            <div class="condition-selector mode-sel" role="group" aria-label="Mode kondisi">
+  <button class="cond-btn cond-normal active" data-condition="normal">Normal</button>
+  <button class="cond-btn cond-altered" data-condition="altered">Altered K+ (EA1)</button>
+  <button class="cond-btn cond-compare" data-condition="compare">Bandingkan</button>
+</div>
+            <div class="ctl-actions">
+              <button id="btn-play" class="btn btn-primary">&#9654; Jalankan</button>
+              <button id="btn-stimulus" class="btn btn-accent" title="Memberi pulsa I_ext 1 ms pada segmen 0–1 (dan menjalankan simulasi bila sedang jeda)">Beri Stimulus</button>
+              <button id="btn-reset" class="btn btn-secondary">Reset</button>
+            </div>
+            <label class="toggle-row" title="Stimulus diulang setiap 30 ms waktu model."><span class="toggle-label">Stimulus otomatis (tiap 30 ms)</span><input type="checkbox" class="toggle" id="auto-stim-toggle"></label>
+
+            <h3 class="ctl-group">Parameter model <span class="chip chip-num">numerik / model</span></h3>
+            <div class="control-group"><label class="control-label" for="gk-slider" title="Konduktansi K+ maksimum kondisi Altered. Normal tetap 36 mS/cm².">g_K Altered</label>
+              <input type="range" id="gk-slider" min="1" max="36" step="0.5" value="16"><div class="control-value"><span id="gk-value">g_K = 16.0 mS/cm²</span></div></div>
+            <div class="control-group"><label class="control-label" for="iext-slider" title="Amplitudo arus stimulus pada segmen 0–1 selama durasi stimulus.">Arus stimulus I_ext</label>
+              <input type="range" id="iext-slider" min="0" max="30" step="0.5" value="10"><div class="control-value"><span id="iext-value">I_ext = 10.0 µA/cm²</span></div></div>
+            <div class="control-group"><label class="control-label" for="dt-slider" title="Langkah integrasi Euler (waktu model). Mengubahnya mengubah hasil numerik.">Timestep integrasi dt</label>
+              <input type="range" id="dt-slider" min="0.01" max="0.05" step="0.005" value="0.02"><div class="control-value"><span id="dt-value">dt = 0.020 ms</span></div></div>
+            <div class="param-notice" id="param-notice" hidden></div>
+
+            <h3 class="ctl-group">Tampilan <span class="chip chip-view">tidak mengubah hasil</span></h3>
+            <div class="control-group"><label class="control-label" for="window-slider" title="Rentang waktu yang ditampilkan pada grafik.">Jendela grafik</label>
+              <input type="range" id="window-slider" min="20" max="200" step="5" value="60"><div class="control-value"><span id="window-value">60 ms</span></div></div>
+            <div class="control-group"><label class="control-label" for="speed-slider" title="Jumlah langkah model per frame animasi (playback). Hasil numerik sama.">Kecepatan playback</label>
+              <input type="range" id="speed-slider" min="0.1" max="4" step="0.1" value="1"><div class="control-value"><span id="speed-value">1.0x</span></div></div>
+            <button id="btn-defaults" class="btn btn-secondary btn-block">Kembalikan parameter ke default</button>
+            <div class="exp-summary" id="exp-summary"></div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================== KANAL ION ============================== -->
+      <section id="kanal" class="section">
+        <div class="panel">
+          <div class="panel-title-row">
+            <h2 class="panel-title">Pembesaran Membran &amp; Kanal Kv1.1 / K+</h2>
+            <div class="mini-toggle" id="channel-view-toggle">
+              <button class="mini-toggle-btn active" data-view="normal">Normal</button>
+              <button class="mini-toggle-btn" data-view="altered">Altered K+</button>
+            </div>
+          </div>
+          <div class="viewport-wrap">
+            <canvas id="viewport-channel"></canvas>
+            <div class="viewport-hint">Klik &amp; seret untuk memutar &middot; scroll untuk zoom</div>
+          </div>
+          <p class="figure-caption"><strong>Visualisasi konseptual/skematik</strong> — bukan struktur atom
+            Kv1.1 yang sebenarnya dan bukan mekanisme mutasi KCNA1 tertentu. Bilayer lipid, kanal Na+, kanal
+            K+/Kv1.1 (dengan gerbang &amp; filter selektivitas), dan kanal leak ditampilkan skematis. Panah
+            hijau adalah gradien konsentrasi K+ yang <em>ilustratif dan statis</em> (konsentrasi tidak
+            disimulasikan secara dinamis pada model HH klasik).</p>
+        </div>
+
+        <div class="panel">
+          <h2 class="panel-title">Pembacaan Kanal Kv1.1 Saat Ini</h2>
+          <div class="metrics-grid" id="channel-readouts">
+            <div class="metric-card"><span class="metric-label">Konduktansi maks. (g_K)</span><span class="metric-value" id="ch-gk">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Konduktansi instan (g_K &middot; n&#8308;)</span><span class="metric-value" id="ch-ginst">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Probabilitas keadaan terbuka (n&#8308;)</span><span class="metric-value" id="ch-prob">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Arus K+ (I_K)</span><span class="metric-value" id="ch-ik">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Konsentrasi ion</span><span class="metric-value" id="ch-conc">tidak disimulasikan dinamis</span></div>
+          </div>
+          <p class="control-hint">Empat baris pertama adalah kuantitas berbeda yang sengaja dipisahkan:
+            konduktansi maksimum adalah parameter (g_K), konduktansi instan memperhitungkan fraksi kanal yang
+            terbuka, probabilitas keadaan adalah n&#8308; itu sendiri (0–1), dan arus adalah hasil akhir yang
+            juga bergantung pada driving force (V − E_K).</p>
+        </div>
+      </section>
+
+      <!-- ============================== HASIL & GRAFIK ============================== -->
+      <section id="hasil" class="section">
+        <div class="panel toolbar-panel">
+          <div class="toolbar-row">
+            <div><div class="ctl-label">Mode</div><div class="condition-selector mode-sel" role="group" aria-label="Mode kondisi">
+  <button class="cond-btn cond-normal active" data-condition="normal">Normal</button>
+  <button class="cond-btn cond-altered" data-condition="altered">Altered K+ (EA1)</button>
+  <button class="cond-btn cond-compare" data-condition="compare">Bandingkan</button>
+</div></div>
+            <div class="toolbar-actions"><span class="data-status" id="data-status">Belum ada data</span>
+              <button class="btn btn-secondary" id="btn-export">Ekspor CSV</button></div>
+          </div>
+          <p class="control-hint">Normal dan Altered dijalankan sebagai dua simulasi model terpisah pada waktu yang sama, dengan stimulus, I_ext, dt, dan durasi identik; hanya g_K yang berbeda. Gerakkan kursor pada grafik mana pun untuk menyinkronkan waktu di semua grafik dan pada neuron 3D (halaman Simulasi).</p>
+          <div class="param-notice" id="param-notice2" hidden></div>
+        </div>
+
+        <div class="panel">
+          <h2 class="panel-title">Potensial membran V<sub>m</sub>(t) &mdash; segmen 0 (lokasi stimulus)</h2>
+          <div class="chart-wrap chart-large"><canvas id="chart-voltage" class="chart-canvas"></canvas></div>
+          <div class="ap-status" id="ap-status"></div>
+          <p class="figure-caption"><strong>Cara membaca:</strong> puncak di atas 0 mV = potensial aksi; area oranye = stimulus; garis oranye putus-putus = parameter diubah saat berjalan. Garis abu-abu putus-putus (bila ada) = segmen yang dipilih di 3D.</p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title-row"><h2 class="panel-title">Arus ion (µA/cm²)</h2>
+            <div class="check-row"><label><input type="checkbox" data-cur="INa" checked> I<sub>Na</sub></label><label><input type="checkbox" data-cur="IK" checked> I<sub>K</sub></label><label><input type="checkbox" data-cur="IL" checked> I<sub>L</sub></label></div></div>
+          <div class="chart-wrap chart-large"><canvas id="chart-currents" class="chart-canvas"></canvas></div>
+          <p class="figure-caption"><strong>Cara membaca:</strong> konvensi model &mdash; arus keluar positif, arus masuk (I<sub>Na</sub> saat depolarisasi) negatif. Skala Y otomatis mengikuti data yang tampil; hilangkan centang I<sub>Na</sub> untuk memperbesar I<sub>K</sub> dan I<sub>L</sub>. I<sub>L</sub> kecil dibanding I<sub>Na</sub>/I<sub>K</sub>.</p>
+        </div>
+
+        <div class="panel">
+          <h2 class="panel-title">Variabel gerbang m(t), h(t), n(t)</h2>
+          <div class="chart-wrap chart-large"><canvas id="chart-gating" class="chart-canvas"></canvas></div>
+          <p class="figure-caption"><strong>m</strong>: aktivasi Na+ (cepat), <strong>h</strong>: inaktivasi Na+ (turun saat depolarisasi), <strong>n</strong>: aktivasi K+ (lebih lambat). Semuanya tak berdimensi, 0–1. Pada mode Bandingkan, garis putus-putus = Altered K+.</p>
+        </div>
+
+        <div class="panel" id="compare-panel">
+          <h2 class="panel-title">Perbandingan Normal vs Altered K+</h2>
+          <div class="chart-wrap chart-large"><canvas id="chart-compareVoltage" class="chart-canvas"></canvas></div>
+          <div class="table-wrap">
+            <table class="compare-table" id="compare-table">
+              <thead><tr><th>Parameter</th><th>Normal</th><th>Altered K+</th><th>Selisih (Altered &minus; Normal)</th></tr></thead>
+              <tbody id="compare-table-body"><tr><td colspan="4" class="table-empty">Belum ada data. Jalankan simulasi.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== ANALISIS ============================== -->
+      <section id="analisis" class="section">
+        <div class="panel">
+          <h2 class="panel-title">Metrik Otomatis</h2>
+          <p class="control-hint" id="metrics-scope"></p>
+          <div class="metrics-grid" id="metrics-grid">
+            <div class="metric-card"><span class="metric-label">Potensial istirahat</span><span class="metric-value" id="m-resting">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Puncak Vm</span><span class="metric-value" id="m-peak">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Amplitudo AP</span><span class="metric-value" id="m-amp">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Waktu ke puncak</span><span class="metric-value" id="m-ttp">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Durasi AP</span><span class="metric-value" id="m-apdur">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Waktu repolarisasi</span><span class="metric-value" id="m-repol">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">AHP</span><span class="metric-value" id="m-ahp">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Jumlah spike</span><span class="metric-value" id="m-spikes">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Frekuensi firing</span><span class="metric-value" id="m-freq">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Puncak I_Na</span><span class="metric-value" id="m-pina">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Puncak I_K</span><span class="metric-value" id="m-pik">&mdash;</span></div>
+            <div class="metric-card"><span class="metric-label">Waktu puncak I_K</span><span class="metric-value" id="m-pikt">&mdash;</span></div>
+          </div>
+          <p class="control-hint">Metrik dihitung dari jendela riwayat grafik yang sedang berjalan pada kondisi
+            aktif (Normal/Altered) yang dipilih di Beranda.</p>
+        </div>
+
+        <div class="panel">
+          <h2 class="panel-title">Temuan (mode Bandingkan)</h2>
+          <ul class="findings-list" id="findings-list">
+            <li>Jalankan simulasi dalam mode Bandingkan untuk menghasilkan temuan berbasis data di sini.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h2 class="panel-title">Apa yang Berubah?</h2>
+          <div class="causal-chain">
+            <div class="causal-node">Konduktansi K+ (g_K)</div><div class="causal-arrow">&#8594;</div>
+            <div class="causal-node">Arus K+ (I_K)</div><div class="causal-arrow">&#8594;</div>
+            <div class="causal-node">Repolarisasi</div><div class="causal-arrow">&#8594;</div>
+            <div class="causal-node">Dinamika potensial aksi</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== PARAMETER ============================== -->
+      <section id="parameter" class="section">
+        <div class="panel">
+          <button class="collapsible-toggle" id="params-toggle" aria-expanded="true">
+            <h2 class="panel-title inline">Parameter Hodgkin–Huxley Aktif</h2>
+            <span class="toggle-caret">&#9662;</span>
+          </button>
+          <div class="collapsible-content" id="params-content">
+            <table class="params-table">
+              <tbody>
+                <tr><td>C_m — kapasitansi membran</td><td id="p-cm">1.0 µF/cm²</td></tr>
+                <tr><td>g_Na — konduktansi maks. Na+</td><td id="p-gna">120.0 mS/cm²</td></tr>
+                <tr><td>g_K — konduktansi maks. K+</td><td id="p-gk">36.0 / 16.0 mS/cm² (normal / altered)</td></tr>
+                <tr><td>g_L — konduktansi leak</td><td id="p-gl">0.3 mS/cm²</td></tr>
+                <tr><td>E_Na — potensial reversal Na+</td><td id="p-ena">50.0 mV</td></tr>
+                <tr><td>E_K — potensial reversal K+</td><td id="p-ek">&minus;77.0 mV</td></tr>
+                <tr><td>E_L — potensial reversal leak</td><td id="p-el">&minus;54.4 mV</td></tr>
+                <tr><td>I_ext — arus stimulus</td><td id="p-iext">10.0 µA/cm²</td></tr>
+                <tr><td>dt — time step integrasi</td><td id="p-dt">0.020 ms</td></tr>
+                <tr><td>Jumlah segmen akson</td><td id="p-nseg">50</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== MATERI EDUKASI ============================== -->
+      <section id="materi" class="section">
+        <div class="panel" id="edu-topics-panel">
+          <h2 class="panel-title">Materi Dasar (dari Nol)</h2>
+          <div id="edu-topics"></div>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Glosarium Persamaan</h2>
+          <div class="table-wrap">
+            <table class="glossary-table" id="glossary-table">
+              <thead><tr><th>Simbol</th><th>Satuan</th><th>Arti Biologis</th><th>Pengaruh pada Simulasi</th></tr></thead>
+              <tbody id="glossary-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== TENTANG ============================== -->
+      <section id="tentang" class="section">
+        <div class="panel">
+          <h2 class="panel-title">Tentang Simulator Ini</h2>
+          <p class="context-text"><strong>EA1 Neuron Simulator (3D)</strong> adalah simulasi potensial membran
+            Hodgkin–Huxley yang dibangun untuk mengeksplorasi, secara sederhana dan edukatif, bagaimana
+            perubahan konduktansi kalium memengaruhi dinamika potensial aksi — dilengkapi visualisasi 3D
+            neuron dan kanal ion.</p>
+          <p class="context-text">Proyek ini disajikan sebagai <strong>model tersederhanakan terinspirasi
+            EA1</strong> dengan <strong>konteks biologis KCNA1 / Kv1.1</strong> — bukan sebagai simulasi
+            langsung dari Episodic Ataxia Type 1 atau kondisi individu mana pun.</p>
+          <h3 class="panel-subtitle">Keterbatasan Ilmiah</h3>
+          <ul class="limits-list" id="limits-list"></ul>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <span>EA1 Neuron Simulator 3D &mdash; model membran Hodgkin&ndash;Huxley &mdash; edukatif, disederhanakan, berjalan offline.</span>
+    </footer>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./js/vendor/three/build/three.module.js",
+    "three/addons/": "./js/vendor/three/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
